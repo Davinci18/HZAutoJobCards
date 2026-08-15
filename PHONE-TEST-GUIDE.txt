@@ -1,0 +1,25 @@
+HZ AUTO - PHONE TEST GUIDE (NO IIS)
+
+EASIEST REAL PHONE TEST
+=======================
+1. Upload the contents of this folder to an HTTPS static website.
+   Cloudflare Pages or GitHub Pages are suitable examples.
+2. Open the HTTPS address in Chrome on your phone.
+3. Open it once, then reload once while you still have internet.
+4. Choose Breakdown Job Card and enter test information.
+5. Sign the signature boxes with your finger.
+6. Tap Review Job Card.
+7. Tap Download PDF first and confirm the PDF looks correct.
+8. Go back to review and tap Share PDF.
+9. Choose Gmail, Outlook or WhatsApp from your phone's share menu.
+10. Choose the recipient inside that app and press Send.
+
+NO HOME SERVER IS INVOLVED.
+Your computer can be completely turned off while you are on the road.
+
+IF YOU DO NOT WANT TO HOST ANYTHING YET
+========================================
+You can copy this folder to a phone and try opening index.html locally.
+PDF download may work, but browser security rules can prevent the Share PDF
+feature and PWA/offline features from working properly from a local file.
+For normal roadside use, HTTPS static hosting is the recommended option.

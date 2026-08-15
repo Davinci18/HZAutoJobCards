@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <title>HZ Auto Job Cards</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="assets/css/app.css?v=2">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <img class="app-logo" src="assets/img/hz-auto-logo.png" alt="HZ Auto logo">
+      <div class="app-title">
+        <h1>HZ Auto Job Cards</h1>
+        <p>Fast roadside job cards, trip checks and PDF sharing</p>
+      </div>
+    </header>
+
+    <section id="screen-home" class="screen active">
+      <div class="hero-card">
+        <h2>Choose the job type</h2>
+        <p>Fill in the job on your phone, review it, sign it, then download or share the completed PDF.</p>
+        <div class="job-grid">
+          <button class="job-choice" type="button" data-open-form="normal">
+            <div class="job-icon">🚗</div>
+            <div><strong>Breakdown Job Card</strong><small>Normal customer, car work, parts and general breakdowns.</small></div>
+          </button>
+          <button class="job-choice" type="button" data-open-form="truck">
+            <div class="job-icon">🚛</div>
+            <div><strong>Breakdown Technician Report</strong><small>Truck/company breakdown report such as Afrimat work.</small></div>
+          </button>
+          <button class="job-choice" type="button" data-open-form="trip">
+            <div class="job-icon">✅</div>
+            <div><strong>Side Tipper Trip Check</strong><small>Part A details plus Part B inspection checklist.</small></div>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- NORMAL BREAKDOWN JOB CARD -->
+    <section id="screen-normal" class="screen">
+      <div class="form-topbar"><button type="button" class="back-btn" data-home>← Home</button><div class="form-title">Breakdown Job Card</div></div>
+      <form id="form-normal" novalidate>
+        <div class="form-card">
+          <h3>Customer and job</h3>
+          <div class="field-grid">
+            <div class="field"><label for="n_customer">Customer name *</label><input id="n_customer" required autocomplete="organization"></div>
+            <div class="field"><label for="n_date">Date *</label><input id="n_date" type="date" required></div>
+            <div class="field"><label for="n_receivedby">Job received by</label><input id="n_receivedby" value="Haaike"></div>
+            <div class="field"><label for="n_time">Time</label><input id="n_time" type="time"></div>
+            <div class="field full"><label for="n_order">Order number</label><input id="n_order"></div>
+            <div class="field full"><label for="n_jobdetails">Job details and special instructions</label><textarea id="n_jobdetails" placeholder="Example: Air leak on brakes"></textarea></div>
+            <div class="field full"><label for="n_location">Location of vehicle</label><input id="n_location" placeholder="Example: Randfontein"></div>
+            <div class="field"><label for="n_driver">Driver name</label><input id="n_driver"></div>
+            <div class="field"><label for="n_cell">Cell no</label><input id="n_cell" type="tel" inputmode="tel"></div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3>Vehicle and trailers</h3>
+          <div class="field-grid">
+            <div class="field"><label for="n_reg_tt">Registration number T/T</label><input id="n_reg_tt"></div>
+            <div class="field"><label for="n_vin_tt">VIN number</label><input id="n_vin_tt"></div>
+            <div class="field"><label for="n_make_model">Truck make & model</label><input id="n_make_model"></div>
+            <div class="field"><label for="n_km">Truck KM</label><input id="n_km" inputmode="numeric"></div>
+            <div class="field"><label for="n_reg_t1">Registration number T1</label><input id="n_reg_t1"></div>
+            <div class="field"><label for="n_vin_t1">VIN number T1</label><input id="n_vin_t1"></div>
+            <div class="field"><label for="n_reg_t2">Registration number T2</label><input id="n_reg_t2"></div>
+            <div class="field"><label for="n_vin_t2">VIN number T2</label><input id="n_vin_t2"></div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3>Work done</h3>
+          <div class="field-grid one"><div class="field"><label for="n_workdone">Work done *</label><textarea id="n_workdone" required placeholder="Use your phone microphone if it is quicker to dictate the repair."></textarea></div></div>
+        </div>
+
+        <div class="form-card">
+          <h3>Parts used and returned</h3>
+          <div class="parts-wrap">
+            <table class="parts-table">
+              <thead><tr><th style="width:90px">QTY</th><th>Description</th><th style="width:120px">Book No.</th><th style="width:48px"></th></tr></thead>
+              <tbody id="n_parts_rows"></tbody>
+            </table>
+          </div>
+          <button class="add-row-btn" type="button" data-add-part="normal">+ Add part</button>
+        </div>
+
+        <div class="form-card">
+          <h3>Technician and time</h3>
+          <div class="field-grid">
+            <div class="field"><label for="n_tech">Tech name</label><input id="n_tech" value="Haaike"></div>
+            <div class="field"><label for="n_hours">Hours used</label><input id="n_hours"></div>
+            <div class="field"><label for="n_start">Time start</label><input id="n_start" type="time"></div>
+            <div class="field"><label for="n_end">Time end</label><input id="n_end" type="time"></div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3>Signatures</h3>
+          <div class="field-grid">
+            <div class="field"><label>Driver signature</label><div class="sig-box"><canvas id="n_driver_sig" class="signature-canvas"></canvas><div class="sig-actions"><button type="button" class="clear-sig" data-clear-sig="n_driver_sig">Clear</button></div></div></div>
+            <div class="field"><label>Technician signature</label><div class="sig-box"><canvas id="n_tech_sig" class="signature-canvas"></canvas><div class="sig-actions"><button type="button" class="clear-sig" data-clear-sig="n_tech_sig">Clear</button></div></div></div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3>Finish job card</h3>
+          <p class="section-note">No server is needed. Review the form first, then download the PDF or share it from your phone to Gmail, Outlook, WhatsApp or another app.</p>
+          <div class="form-actions">
+            <button class="primary-btn" type="button" data-review="normal">Review Job Card</button>
+            <button class="secondary-btn" type="button" data-save-draft="normal">Save Draft on Phone</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- TRUCK TECHNICIAN REPORT -->
+    <section id="screen-truck" class="screen">
+      <div class="form-topbar"><button type="button" class="back-btn" data-home>← Home</button><div class="form-title">Breakdown Technician Report</div></div>
+      <form id="form-truck" novalidate>
+        <div class="form-card">
+          <h3>Customer and truck</h3>
+          <div class="field-grid">
+            <div class="field"><label for="t_customer">Customer name *</label><input id="t_customer" required placeholder="Example: Afrimat Logistics"></div>
+            <div class="field"><label for="t_date">Date *</label><input id="t_date" type="date" required></div>
+            <div class="field"><label for="t_order">Order number</label><input id="t_order"></div>
+            <div class="field"><label for="t_reg">Reg. number</label><input id="t_reg"></div>
+            <div class="field"><label for="t_vin">VIN number</label><input id="t_vin"></div>
+            <div class="field"><label for="t_fleet">Fleet number</label><input id="t_fleet"></div>
+            <div class="field"><label for="t_engine">Engine number</label><input id="t_engine"></div>
+            <div class="field"><label for="t_km">KM</label><input id="t_km" inputmode="numeric"></div>
+            <div class="field"><label for="t_trailer_a">Trailer A Make / Reg</label><input id="t_trailer_a"></div>
+            <div class="field"><label for="t_trailer_a_vin">Trailer A VIN</label><input id="t_trailer_a_vin"></div>
+            <div class="field"><label for="t_trailer_b">Trailer B Make / Reg</label><input id="t_trailer_b"></div>
+            <div class="field"><label for="t_trailer_b_vin">Trailer B VIN</label><input id="t_trailer_b_vin"></div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3>Breakdown details</h3>
+          <div class="field-grid one">
+            <div class="field"><label for="t_location">Location of breakdown *</label><input id="t_location" required></div>
+            <div class="field"><label for="t_request">Customer request</label><textarea id="t_request"></textarea></div>
+            <div class="field"><label for="t_cause">Cause of problem</label><textarea id="t_cause"></textarea></div>
+            <div class="field"><label for="t_action">Action taken *</label><textarea id="t_action" required></textarea></div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3>Description / amount</h3>
+          <div class="field-grid">
+            <div class="field"><label for="t_callout">Call out</label><input id="t_callout" inputmode="decimal" placeholder="R"></div>
+            <div class="field"><label for="t_travelling">Travelling</label><input id="t_travelling" inputmode="decimal" placeholder="R"></div>
+            <div class="field"><label for="t_travelling_time">Travelling time</label><input id="t_travelling_time"></div>
+            <div class="field"><label for="t_labour_nt">Labour N/T</label><input id="t_labour_nt" inputmode="decimal" placeholder="R"></div>
+            <div class="field"><label for="t_labour_ot">Labour O/T</label><input id="t_labour_ot" inputmode="decimal" placeholder="R"></div>
+            <div class="field"><label for="t_consumables">Consumables</label><input id="t_consumables" inputmode="decimal" placeholder="R"></div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3>Parts used</h3>
+          <div class="parts-wrap">
+            <table class="parts-table">
+              <thead><tr><th>Description</th><th style="width:140px">Amount</th><th style="width:48px"></th></tr></thead>
+              <tbody id="t_parts_rows"></tbody>
+            </table>
+          </div>
+          <button class="add-row-btn" type="button" data-add-part="truck">+ Add part</button>
+        </div>
+
+        <div class="form-card">
+          <h3>Time reported</h3>
+          <div class="parts-wrap">
+            <table class="parts-table">
+              <thead><tr><th>Item</th><th style="width:145px">Time / value</th><th style="width:130px">KM</th></tr></thead>
+              <tbody>
+                <tr><td>Time started</td><td><input id="t_time_started" type="time"></td><td><input id="t_time_started_km" inputmode="numeric"></td></tr>
+                <tr><td>Time arrived at site</td><td><input id="t_time_arrived" type="time"></td><td><input id="t_time_arrived_km" inputmode="numeric"></td></tr>
+                <tr><td>Time of completion</td><td><input id="t_time_completed" type="time"></td><td><input id="t_time_completed_km" inputmode="numeric"></td></tr>
+                <tr><td>Time back base</td><td><input id="t_time_back" type="time"></td><td><input id="t_time_back_km" inputmode="numeric"></td></tr>
+                <tr><td>Normal time</td><td><input id="t_normal_time"></td><td></td></tr>
+                <tr><td>Over time</td><td><input id="t_over_time"></td><td></td></tr>
+                <tr><td>Toll fees</td><td><input id="t_toll_fees" inputmode="decimal"></td><td></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="field" style="margin-top:12px"><label for="t_tech_report">Technician report</label><textarea id="t_tech_report"></textarea></div>
+        </div>
+
+        <div class="form-card">
+          <h3>Technician / driver signatures</h3>
+          <div class="field-grid">
+            <div class="field"><label for="t_technician">Technician name</label><input id="t_technician" value="Haaike"></div>
+            <div class="field"><label for="t_driver">Driver name</label><input id="t_driver"></div>
+            <div class="field"><label>Technician signature</label><div class="sig-box"><canvas id="t_tech_sig" class="signature-canvas"></canvas><div class="sig-actions"><button type="button" class="clear-sig" data-clear-sig="t_tech_sig">Clear</button></div></div></div>
+            <div class="field"><label>Driver signature</label><div class="sig-box"><canvas id="t_driver_sig" class="signature-canvas"></canvas><div class="sig-actions"><button type="button" class="clear-sig" data-clear-sig="t_driver_sig">Clear</button></div></div></div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3>Finish technician report</h3>
+          <p class="section-note">No server is needed. Review the report first, then download the PDF or share it from your phone.</p>
+          <div class="form-actions">
+            <button class="primary-btn" type="button" data-review="truck">Review Technician Report</button>
+            <button class="secondary-btn" type="button" data-save-draft="truck">Save Draft on Phone</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- SIDE TIPPER TRIP CHECK -->
+    <section id="screen-trip" class="screen">
+      <div class="form-topbar"><button type="button" class="back-btn" data-home>← Home</button><div class="form-title">Side Tipper Trip Check</div></div>
+      <form id="form-trip" novalidate>
+        <div class="form-card">
+          <h3>Part A — Vehicle / job details</h3>
+          <div class="field-grid three">
+            <div class="field"><label for="p_customer">Customer name *</label><input id="p_customer" required></div>
+            <div class="field"><label for="p_fleet">Fleet number</label><input id="p_fleet"></div>
+            <div class="field"><label for="p_jobcard">Job card</label><input id="p_jobcard"></div>
+            <div class="field"><label for="p_order">Order number</label><input id="p_order"></div>
+            <div class="field"><label for="p_vehicle_reg">Vehicle Reg</label><input id="p_vehicle_reg"></div>
+            <div class="field"><label for="p_estimate">Estimate</label><input id="p_estimate"></div>
+            <div class="field"><label for="p_inspection_date">Inspection date *</label><input id="p_inspection_date" type="date" required></div>
+            <div class="field"><label for="p_vehicle_make">Vehicle Make</label><input id="p_vehicle_make"></div>
+            <div class="field"><label for="p_invoice">Invoice</label><input id="p_invoice"></div>
+            <div class="field"><label for="p_time_start">Time starts</label><input id="p_time_start" type="time"></div>
+            <div class="field"><label for="p_vehicle_type">Vehicle type</label><input id="p_vehicle_type"></div>
+            <div class="field"><label for="p_parts_yn">Parts Y/N</label><select id="p_parts_yn"><option value=""></option><option>Yes</option><option>No</option></select></div>
+            <div class="field"><label for="p_time_finish">Time Finish</label><input id="p_time_finish" type="time"></div>
+            <div class="field"><label for="p_cof">COF details</label><input id="p_cof"></div>
+            <div class="field"><label for="p_warranty">Warranty</label><input id="p_warranty"></div>
+            <div class="field"><label for="p_location">Location</label><input id="p_location"></div>
+            <div class="field"><label for="p_vin">VIN Number</label><input id="p_vin"></div>
+            <div class="field"><label for="p_km">Km's</label><input id="p_km" inputmode="numeric"></div>
+            <div class="field full"><label for="p_breakdown">Breakdown Y/N (give details)</label><textarea id="p_breakdown"></textarea></div>
+            <div class="field full"><label for="p_comments">Comments / notes</label><textarea id="p_comments"></textarea></div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3>Part B — Inspection checklist</h3>
+          <p class="section-note">Choose the result for each check. Leave it blank if it was not checked.</p>
+          <div id="trip-check-list" class="check-list"></div>
+        </div>
+
+        <div class="form-card">
+          <h3>Brake pad / shoe thickness</h3>
+          <div class="field-grid">
+            <div class="field"><label for="p_brake_1_left">1st axle — Left hand side</label><input id="p_brake_1_left"></div>
+            <div class="field"><label for="p_brake_1_right">1st axle — Right hand side</label><input id="p_brake_1_right"></div>
+            <div class="field"><label for="p_brake_2_left">2nd axle — Left hand side</label><input id="p_brake_2_left"></div>
+            <div class="field"><label for="p_brake_2_right">2nd axle — Right hand side</label><input id="p_brake_2_right"></div>
+            <div class="field full"><label for="p_b_comments">Part B comments</label><textarea id="p_b_comments"></textarea></div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3>Supplier and customer</h3>
+          <div class="field-grid">
+            <div class="field"><label for="p_supplier_date">Supplier date</label><input id="p_supplier_date" type="date"></div>
+            <div class="field"><label for="p_customer_date">Customer date</label><input id="p_customer_date" type="date"></div>
+            <div class="field"><label for="p_tech_name">Technician / Mechanic / RSA name</label><input id="p_tech_name" value="Haaike"></div>
+            <div class="field"><label for="p_foreman_name">Foreman / Manager name</label><input id="p_foreman_name"></div>
+            <div class="field"><label>Technician signature</label><div class="sig-box"><canvas id="p_tech_sig" class="signature-canvas"></canvas><div class="sig-actions"><button type="button" class="clear-sig" data-clear-sig="p_tech_sig">Clear</button></div></div></div>
+            <div class="field"><label>Customer / Foreman signature</label><div class="sig-box"><canvas id="p_customer_sig" class="signature-canvas"></canvas><div class="sig-actions"><button type="button" class="clear-sig" data-clear-sig="p_customer_sig">Clear</button></div></div></div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3>Finish trip check</h3>
+          <p class="section-note">No server is needed. Review the two-page trip check first, then download the PDF or share it from your phone.</p>
+          <div class="form-actions">
+            <button class="primary-btn" type="button" data-review="trip">Review Trip Check</button>
+            <button class="secondary-btn" type="button" data-save-draft="trip">Save Draft on Phone</button>
+          </div>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <!-- REVIEW / CONFIRM -->
+  <div id="review-modal" class="modal" aria-hidden="true">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h2>Check everything before sharing</h2>
+        <button id="close-review" class="secondary-btn" type="button">Go Back</button>
+      </div>
+      <div id="preview-pages" class="preview-pages"><div class="loading-note">Building preview…</div></div>
+      <p class="section-note" style="margin:12px 0 0">When you press Share PDF, your phone's normal share menu opens. Choose Gmail, Outlook, WhatsApp, Drive or another app. The PDF is attached as a file.</p>
+      <div class="modal-actions">
+        <button id="edit-review" class="secondary-btn" type="button">Edit Details</button>
+        <button id="download-pdf" class="secondary-btn" type="button">Download PDF</button>
+        <button id="confirm-send" class="primary-btn" type="button">Yes, Everything Is Correct — Share PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- OFF-SCREEN PDF TEMPLATES -->
+  <div id="print-root">
+    <!-- Normal job card -->
+    <section id="pdf-normal-1" class="pdf-page pdf-normal-page">
+      <div class="pdf-job-card-heading">
+        <img src="assets/img/hz-auto-logo.png" alt="" style="position:absolute;left:45px;top:30px;width:105px;height:86px;object-fit:contain">
+        <img src="assets/img/hz-auto-logo.png" alt="" style="position:absolute;right:45px;top:30px;width:105px;height:86px;object-fit:contain">
+        <div class="pdf-job-card-title">Breakdown Job Card <span id="pdf_n_jobno" style="font-size:15px;font-weight:500"></span></div>
+      </div>
+      <table class="pdf-table pdf-compact" style="margin-top:58px">
+        <tr><td class="pdf-label" style="width:24%">Customer name</td><td id="pdf_n_customer" style="width:28%"></td><td class="pdf-label" style="width:18%">Date</td><td id="pdf_n_date"></td></tr>
+        <tr><td class="pdf-label">Job received by</td><td id="pdf_n_receivedby"></td><td class="pdf-label">Time</td><td id="pdf_n_time"></td></tr>
+        <tr><td class="pdf-label">Order Number</td><td id="pdf_n_order" colspan="3"></td></tr>
+        <tr><td class="pdf-label" style="height:80px">Job details and special instructions</td><td id="pdf_n_jobdetails" colspan="3" class="pdf-value"></td></tr>
+        <tr><td class="pdf-label">Location of vehicle</td><td id="pdf_n_location" colspan="3"></td></tr>
+        <tr><td class="pdf-label">Driver name</td><td id="pdf_n_driver"></td><td class="pdf-label">Cell no</td><td id="pdf_n_cell"></td></tr>
+        <tr><td class="pdf-label">Registration number T/T</td><td id="pdf_n_reg_tt"></td><td class="pdf-label">VIN Number</td><td id="pdf_n_vin_tt"></td></tr>
+        <tr><td class="pdf-label">Truck make &amp; Model</td><td id="pdf_n_make_model"></td><td class="pdf-label">Truck Km</td><td id="pdf_n_km"></td></tr>
+        <tr><td class="pdf-label">Registration number T1</td><td id="pdf_n_reg_t1"></td><td class="pdf-label">VIN Number</td><td id="pdf_n_vin_t1"></td></tr>
+        <tr><td class="pdf-label">Registration number T2</td><td id="pdf_n_reg_t2"></td><td class="pdf-label">VIN Number</td><td id="pdf_n_vin_t2"></td></tr>
+      </table>
+      <div class="pdf-spacer"></div>
+      <table class="pdf-table"><tr><td class="pdf-label">Work Done</td></tr><tr><td id="pdf_n_workdone" style="height:220px;white-space:pre-wrap"></td></tr></table>
+      <div class="pdf-spacer"></div>
+      <table class="pdf-table pdf-compact">
+        <thead><tr><th style="width:10%">QTY</th><th>Description</th><th style="width:24%">Book No.</th></tr></thead>
+        <tbody id="pdf_n_parts"></tbody>
+      </table>
+      <div class="pdf-spacer"></div>
+      <table class="pdf-table pdf-compact">
+        <tr><td class="pdf-label" style="width:24%">Tech name</td><td id="pdf_n_tech" style="width:28%"></td><td class="pdf-label" style="width:22%">Hours used</td><td id="pdf_n_hours"></td></tr>
+        <tr><td class="pdf-label">Time Start</td><td id="pdf_n_start"></td><td class="pdf-label">Time end</td><td id="pdf_n_end"></td></tr>
+      </table>
+      <div class="pdf-signatures">
+        <div><div style="font-weight:700">Driver Signature:</div><img id="pdf_n_driver_sig" class="pdf-sign-image" alt=""></div>
+        <div><div style="font-weight:700">Technician Signature:</div><img id="pdf_n_tech_sig" class="pdf-sign-image" alt=""></div>
+      </div>
+    </section>
+
+    <!-- Truck breakdown technician report -->
+    <section id="pdf-truck-1" class="pdf-page">
+      <div class="pdf-header" style="grid-template-columns:125px 1fr 260px">
+        <img src="assets/img/hz-auto-logo.png" alt="HZ Auto">
+        <div></div>
+        <div class="pdf-contact" style="font-size:23px;line-height:1.65">Haaike@hzauto.co.za<br>083 55 55 788</div>
+      </div>
+      <div class="pdf-number" style="text-align:right">AML<span id="pdf_t_docno">0000</span></div>
+      <table class="pdf-table pdf-compact">
+        <tr><th colspan="2" style="text-align:left;font-size:16px">BREAKDOWN TECHNICIAN REPORT</th><td class="pdf-label" style="width:18%">Date:</td><td id="pdf_t_date" style="width:31%"></td></tr>
+        <tr><td class="pdf-label" style="width:22%">Customer name:</td><td id="pdf_t_customer" style="width:29%"></td><td class="pdf-label">Order number:</td><td id="pdf_t_order"></td></tr>
+        <tr><td class="pdf-label">Reg. number:</td><td id="pdf_t_reg"></td><td class="pdf-label">VIN number:</td><td id="pdf_t_vin"></td></tr>
+        <tr><td class="pdf-label">Fleet number:</td><td id="pdf_t_fleet"></td><td class="pdf-label">Engine number:</td><td id="pdf_t_engine"></td></tr>
+        <tr><td class="pdf-label">KM:</td><td id="pdf_t_km"></td><td></td><td></td></tr>
+        <tr><td class="pdf-label">Trailer A Make/ Reg:</td><td id="pdf_t_trailer_a"></td><td class="pdf-label">VIN number:</td><td id="pdf_t_trailer_a_vin"></td></tr>
+        <tr><td class="pdf-label">Trailer B Make/ Reg:</td><td id="pdf_t_trailer_b"></td><td class="pdf-label">VIN number:</td><td id="pdf_t_trailer_b_vin"></td></tr>
+      </table>
+      <div style="display:grid;grid-template-columns:51% 49%;margin-top:-1px">
+        <div>
+          <table class="pdf-table pdf-compact">
+            <tr><th style="text-align:left">LOCATION OF BREAKDOWN:</th></tr><tr><td id="pdf_t_location" style="height:54px"></td></tr>
+            <tr><th style="text-align:left">CUSTOMER REQUEST:</th></tr><tr><td id="pdf_t_request" style="height:80px;white-space:pre-wrap"></td></tr>
+            <tr><th style="text-align:left">CAUSE OF PROBLEM</th></tr><tr><td id="pdf_t_cause" style="height:83px;white-space:pre-wrap"></td></tr>
+            <tr><th style="text-align:left">ACTION TAKEN</th></tr><tr><td id="pdf_t_action" style="height:105px;white-space:pre-wrap"></td></tr>
+          </table>
+        </div>
+        <div>
+          <table class="pdf-table pdf-compact">
+            <tr><th style="text-align:left">DESCRIPTION:</th><th>AMOUNT</th></tr>
+            <tr><td>Call out:</td><td id="pdf_t_callout" class="pdf-amount"></td></tr>
+            <tr><td>Travelling:</td><td id="pdf_t_travelling" class="pdf-amount"></td></tr>
+            <tr><td>Travelling time:</td><td id="pdf_t_travelling_time" class="pdf-amount"></td></tr>
+            <tr><td>Labour N/T:</td><td id="pdf_t_labour_nt" class="pdf-amount"></td></tr>
+            <tr><td>Labour O/T:</td><td id="pdf_t_labour_ot" class="pdf-amount"></td></tr>
+            <tr><td>Consumables:</td><td id="pdf_t_consumables" class="pdf-amount"></td></tr>
+            <tr><th style="text-align:left">PARTS USED</th><th></th></tr>
+            <tbody id="pdf_t_parts"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="pdf-spacer"></div>
+      <table class="pdf-table pdf-compact">
+        <tr><th style="text-align:left;width:43%">TIME REPORTED</th><th style="width:18%">TIME</th><th style="width:18%">KM</th><td style="width:21%" rowspan="9" id="pdf_t_tech_report"></td></tr>
+        <tr><td>Time started</td><td id="pdf_t_time_started"></td><td id="pdf_t_time_started_km"></td></tr>
+        <tr><td>Time arrived at site</td><td id="pdf_t_time_arrived"></td><td id="pdf_t_time_arrived_km"></td></tr>
+        <tr><td>Time of completion</td><td id="pdf_t_time_completed"></td><td id="pdf_t_time_completed_km"></td></tr>
+        <tr><td>Time back base</td><td id="pdf_t_time_back"></td><td id="pdf_t_time_back_km"></td></tr>
+        <tr><td>Normal time</td><td id="pdf_t_normal_time"></td><td></td></tr>
+        <tr><td>Over time</td><td id="pdf_t_over_time"></td><td></td></tr>
+        <tr><td>Toll fees</td><td id="pdf_t_toll_fees"></td><td></td></tr>
+        <tr><td>Technician report</td><td colspan="2"></td></tr>
+      </table>
+      <div class="pdf-spacer"></div>
+      <table class="pdf-table pdf-compact">
+        <tr><td class="pdf-label">Technician Name:</td><td id="pdf_t_technician"></td><td class="pdf-label">Driver name:</td><td id="pdf_t_driver"></td></tr>
+        <tr><td class="pdf-label">Signature</td><td><img id="pdf_t_tech_sig" class="pdf-sign-image" alt=""></td><td class="pdf-label">Signature</td><td><img id="pdf_t_driver_sig" class="pdf-sign-image" alt=""></td></tr>
+      </table>
+    </section>
+
+    <!-- Side tipper Part A -->
+    <section id="pdf-trip-1" class="pdf-page">
+      <div class="pdf-header">
+        <img src="assets/img/hz-auto-logo.png" alt="HZ Auto">
+        <div class="pdf-company"><h1>HZ Auto Pty (Ltd)</h1><div class="sub">Company Reg: 2015/453631/07</div></div>
+        <div class="pdf-contact"><u>Contact Details:</u><br><br>0835555788 / 0720213022<br>Email: haaike@hzauto.co.za<br>Address: 20 Dryden Ave,<br>Comet<br>Boksburg<br>1459</div>
+      </div>
+      <div class="pdf-title small">SIDE TIPPER TRIP CHECK - Part A</div>
+      <table class="pdf-table pdf-compact">
+        <tr><th>Item</th><th></th><th>Item</th><th></th><th>Item</th><th></th></tr>
+        <tr><td>Customer name</td><td id="pdf_p_customer"></td><td>Fleet Number</td><td id="pdf_p_fleet"></td><td>Job card</td><td id="pdf_p_jobcard"></td></tr>
+        <tr><td>Order number</td><td id="pdf_p_order"></td><td>Vehicle Reg</td><td id="pdf_p_vehicle_reg"></td><td>Estimate</td><td id="pdf_p_estimate"></td></tr>
+        <tr><td>Inspection date</td><td id="pdf_p_inspection_date"></td><td>Vehicle Make</td><td id="pdf_p_vehicle_make"></td><td>Invoice</td><td id="pdf_p_invoice"></td></tr>
+        <tr><td>Time starts</td><td id="pdf_p_time_start"></td><td>Vehicle type</td><td id="pdf_p_vehicle_type"></td><td>Parts Y/N</td><td id="pdf_p_parts_yn"></td></tr>
+        <tr><td>Time Finish</td><td id="pdf_p_time_finish"></td><td>COF details</td><td id="pdf_p_cof"></td><td>Warranty</td><td id="pdf_p_warranty"></td></tr>
+        <tr><td>Location</td><td id="pdf_p_location"></td><td>Vin Number:</td><td id="pdf_p_vin"></td><td>Km's</td><td id="pdf_p_km"></td></tr>
+        <tr><td colspan="6"><strong>Breakdown Y/N:(give details)</strong><div id="pdf_p_breakdown" style="height:48px;white-space:pre-wrap"></div></td></tr>
+      </table>
+      <div class="pdf-spacer"></div>
+      <table class="pdf-table"><tr><th style="text-align:left">COMMENTS / NOTES:</th></tr><tr><td id="pdf_p_comments" style="height:330px;white-space:pre-wrap;background-image:linear-gradient(to bottom, transparent 30px,#aaa 31px);background-size:100% 31px;line-height:31px"></td></tr></table>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:50px;margin-top:26px">
+        <div><div style="text-align:center;font-size:20px;font-weight:800;margin-bottom:22px">SUPPLIER</div><table class="pdf-table pdf-compact"><tr><td>Date</td><td id="pdf_p_supplier_date"></td></tr><tr><td>Technician Name</td><td id="pdf_p_tech_name"></td></tr><tr><td>Technician Sign</td><td><img id="pdf_p_tech_sig_a" class="pdf-sign-image" alt=""></td></tr></table></div>
+        <div><div style="text-align:center;font-size:20px;font-weight:800;margin-bottom:22px">CUSTOMER</div><table class="pdf-table pdf-compact"><tr><td>Date</td><td id="pdf_p_customer_date"></td></tr><tr><td>Foreman / Manager name</td><td id="pdf_p_foreman_name"></td></tr><tr><td>Foreman / Manager sign</td><td><img id="pdf_p_customer_sig_a" class="pdf-sign-image" alt=""></td></tr></table></div>
+      </div>
+      <div class="pdf-footer"><div class="pdf-footer-grid"><div><strong>Side tipper trip check sheet</strong><br><br>Page 1 of 2</div><div style="display:flex;align-items:center;justify-content:center;font-weight:800">THE RIGHT WAY IS THE ONLY WAY</div><div>Created by: Haaike Zeilinga<br>Date: 20.06.2021<br>Revision Date: 26.02.2024<br>Revision No: 2</div></div></div>
+    </section>
+
+    <!-- Side tipper Part B -->
+    <section id="pdf-trip-2" class="pdf-page">
+      <div class="pdf-header">
+        <img src="assets/img/hz-auto-logo.png" alt="HZ Auto">
+        <div class="pdf-company"><h1>HZ Auto Pty (Ltd)</h1><div class="sub">Company Reg: 2015/453631/07</div></div>
+        <div class="pdf-contact"><u>Contact Details:</u><br><br>0835555788 / 0720213022<br>Email: haaike@hzauto.co.za<br>Address: 20 Dryden Ave,<br>Comet<br>Boksburg<br>1459</div>
+      </div>
+      <div class="pdf-title small">SIDE TIPPER TRIP CHECK - Part B</div>
+      <table class="pdf-table pdf-compact trip-check-table">
+        <thead><tr><th>Description</th><th>Checked</th><th>Replaced</th><th>Repaired/<br>Adjusted</th></tr></thead>
+        <tbody id="pdf_p_check_rows"></tbody>
+      </table>
+      <div class="pdf-spacer"></div>
+      <table class="pdf-table pdf-compact"><tr><th style="text-align:left">Brake pad/ shoe thickness</th><th>Left hand side</th><th>Right hand side</th></tr><tr><td>1st axle</td><td id="pdf_p_brake_1_left"></td><td id="pdf_p_brake_1_right"></td></tr><tr><td>2nd axle</td><td id="pdf_p_brake_2_left"></td><td id="pdf_p_brake_2_right"></td></tr></table>
+      <div class="pdf-spacer"></div>
+      <table class="pdf-table"><tr><td class="pdf-label">Comments</td></tr><tr><td id="pdf_p_b_comments" style="height:145px;white-space:pre-wrap"></td></tr></table>
+      <div class="pdf-spacer"></div>
+      <table class="pdf-table pdf-compact"><tr><td class="pdf-label">Mechanic / RSA name:</td><td id="pdf_p_tech_name_b"></td><td class="pdf-label">Mechanic / RSA signature:</td><td><img id="pdf_p_tech_sig_b" class="pdf-sign-image" alt=""></td></tr></table>
+      <div class="pdf-footer"><div class="pdf-footer-grid"><div><strong>Side tipper trip check sheet</strong><br><br>Page 2 of 2</div><div style="display:flex;align-items:center;justify-content:center;font-weight:800">THE RIGHT WAY IS THE ONLY WAY</div><div>Created by: Haaike Zeilinga<br>Date: 05.07.2021<br>Revision Date: 26.02.2024<br>Revision No: 2</div></div></div>
+    </section>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="assets/js/app.js?v=2"></script>
+</body>
+</html>
