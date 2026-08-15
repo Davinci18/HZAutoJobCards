@@ -156,3 +156,157 @@ input:focus, select:focus, textarea:focus { border-color:#64748b; box-shadow:0 0
   .modal-actions { grid-template-columns:1fr; }
   .app-header { padding-bottom:12px; }
 }
+
+/* =========================================================
+   V3 GitHub Pages polish
+   These rules only style the phone/web interface.
+   PDF templates and their content remain unchanged.
+   ========================================================= */
+:root {
+  --bg: #eef1f4;
+  --card: #ffffff;
+  --ink: #1c1f23;
+  --muted: #69717c;
+  --line: #d9dee5;
+  --brand: #171717;
+  --accent: #c62828;
+  --accent-dark: #9f1f1f;
+  --danger: #b91c1c;
+}
+
+html { background:#eef1f4; }
+body {
+  background:
+    radial-gradient(circle at top right, rgba(198,40,40,.06), transparent 340px),
+    linear-gradient(180deg, #f6f7f9 0, #edf0f3 100%);
+}
+
+.app-shell { width:min(100%, 920px); padding:18px 16px 90px; }
+
+.app-header {
+  margin:0 0 16px;
+  padding:16px 18px;
+  border-radius:18px;
+  background:linear-gradient(135deg, #111 0%, #282828 100%);
+  box-shadow:0 10px 30px rgba(0,0,0,.12);
+}
+.app-logo {
+  width:76px;
+  height:64px;
+  padding:5px;
+  border-radius:12px;
+  box-shadow:0 2px 9px rgba(0,0,0,.22);
+}
+.app-title h1 { color:#fff; font-size:1.55rem; letter-spacing:-.02em; }
+.app-title p { color:#d7d7d7; font-size:.92rem; }
+
+.hero-card, .form-card, .status-card {
+  border:1px solid rgba(0,0,0,.07);
+  border-radius:18px;
+  box-shadow:0 7px 24px rgba(15,23,42,.06);
+}
+.hero-card { padding:22px; }
+.hero-card h2 { font-size:1.35rem; }
+
+.job-grid { grid-template-columns:repeat(3, minmax(0,1fr)); gap:14px; }
+.job-choice {
+  min-height:150px;
+  align-items:flex-start;
+  flex-direction:column;
+  justify-content:center;
+  padding:18px;
+  border:1px solid #dfe3e8;
+  box-shadow:0 2px 8px rgba(15,23,42,.03);
+  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.job-choice:hover {
+  transform:translateY(-2px);
+  border-color:#c6cbd2;
+  box-shadow:0 8px 20px rgba(15,23,42,.08);
+}
+.job-icon {
+  display:grid;
+  place-items:center;
+  width:48px;
+  height:48px;
+  background:#f3f4f6;
+  border-radius:13px;
+  font-size:1.7rem;
+}
+.job-choice strong { font-size:1.02rem; }
+
+.form-topbar {
+  position:sticky;
+  top:0;
+  z-index:20;
+  margin:0 -4px 14px;
+  padding:9px 4px;
+  background:rgba(238,241,244,.94);
+  backdrop-filter:blur(8px);
+}
+.back-btn {
+  color:#30343a;
+  border:1px solid #d5dae1;
+  background:#fff;
+  border-radius:10px;
+  padding:9px 12px;
+  box-shadow:0 2px 7px rgba(0,0,0,.04);
+}
+.form-title { font-size:1.05rem; }
+.form-card { padding:20px; margin-bottom:16px; }
+.form-card h3 {
+  font-size:1.03rem;
+  padding-bottom:11px;
+  margin-bottom:16px;
+  border-bottom:1px solid #edf0f2;
+}
+
+label { color:#333840; letter-spacing:.005em; }
+input, select, textarea {
+  border-color:#d2d7de;
+  background:#fff;
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+input:hover, select:hover, textarea:hover { border-color:#b9c0c9; }
+input:focus, select:focus, textarea:focus {
+  border-color:#555d67;
+  box-shadow:0 0 0 3px rgba(85,93,103,.12);
+}
+
+.primary-btn {
+  background:var(--accent);
+  border-color:var(--accent);
+  box-shadow:0 4px 12px rgba(198,40,40,.18);
+}
+.primary-btn:hover { background:var(--accent-dark); border-color:var(--accent-dark); }
+.secondary-btn:hover { background:#f8f9fa; }
+.add-row-btn:hover { background:#f0f2f5; }
+
+.parts-table th {
+  background:#f7f8fa;
+  color:#525963;
+  border-bottom:1px solid #dfe3e8;
+}
+
+.check-item { background:#fbfbfc; }
+.sig-box { box-shadow:inset 0 0 0 1px rgba(255,255,255,.7); }
+
+@media (max-width:760px) {
+  .app-shell { padding:10px 10px 75px; }
+  .app-header { margin-bottom:12px; padding:13px 14px; border-radius:15px; }
+  .app-logo { width:62px; height:54px; }
+  .app-title h1 { font-size:1.25rem; }
+  .app-title p { font-size:.8rem; line-height:1.25; }
+  .hero-card { padding:16px; }
+  .job-grid { grid-template-columns:1fr; gap:10px; }
+  .job-choice {
+    min-height:82px;
+    flex-direction:row;
+    align-items:center;
+    justify-content:flex-start;
+    padding:14px;
+  }
+  .job-icon { flex:0 0 46px; width:46px; height:46px; }
+  .form-card { padding:15px; border-radius:14px; }
+  .form-topbar { padding-top:6px; }
+}
