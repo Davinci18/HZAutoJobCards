@@ -1,9 +1,9 @@
-const CACHE = 'hzauto-jobcards-v4-github-root';
+const CACHE = 'hzauto-jobcards-v5-github-root';
 const CORE = [
   './',
   './index.html',
-  './app.css?v=4',
-  './app.js?v=4',
+  './app.css?v=5',
+  './app.js?v=5',
   './hz-auto-logo.png',
   './icon-192.png',
   './icon-512.png',
