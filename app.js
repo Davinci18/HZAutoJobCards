@@ -41,6 +41,7 @@
       this.ctx = canvas.getContext('2d');
       this.drawing = false;
       this.empty = true;
+      this.enabled = false;
       this.last = null;
       this.bind();
     }
@@ -53,7 +54,7 @@
       this.canvas.width = Math.round(rect.width * ratio);
       this.canvas.height = Math.round(rect.height * ratio);
       this.ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-      this.ctx.lineWidth = 2.2;
+      this.ctx.lineWidth = 2.4;
       this.ctx.lineCap = 'round';
       this.ctx.lineJoin = 'round';
       this.ctx.strokeStyle = '#111';
@@ -65,15 +66,24 @@
       return { x: e.clientX - rect.left, y: e.clientY - rect.top };
     }
 
+    setEnabled(enabled) {
+      this.enabled = Boolean(enabled);
+      if (!this.enabled) {
+        this.drawing = false;
+        this.last = null;
+      }
+    }
+
     bind() {
       this.canvas.addEventListener('pointerdown', (e) => {
+        if (!this.enabled) return;
         e.preventDefault();
         this.drawing = true;
         this.last = this.point(e);
         this.canvas.setPointerCapture?.(e.pointerId);
       });
       this.canvas.addEventListener('pointermove', (e) => {
-        if (!this.drawing) return;
+        if (!this.enabled || !this.drawing) return;
         e.preventDefault();
         const p = this.point(e);
         this.ctx.beginPath();
@@ -82,6 +92,7 @@
         this.ctx.stroke();
         this.last = p;
         this.empty = false;
+        updateSignatureControls(this.canvas.id);
       });
       const stop = () => { this.drawing = false; this.last = null; };
       this.canvas.addEventListener('pointerup', stop);
@@ -93,6 +104,7 @@
       const rect = this.canvas.getBoundingClientRect();
       this.ctx.clearRect(0, 0, rect.width, rect.height);
       this.empty = true;
+      updateSignatureControls(this.canvas.id);
     }
 
     toDataURL() {
@@ -108,17 +120,64 @@
         this.ctx.clearRect(0, 0, rect.width, rect.height);
         this.ctx.drawImage(img, 0, 0, rect.width, rect.height);
         this.empty = false;
+        updateSignatureControls(this.canvas.id);
       };
       img.src = data;
     }
   }
 
+  function updateSignatureControls(id) {
+    const pad = signaturePads[id];
+    const box = document.querySelector(`[data-signature-box="${id}"]`);
+    if (!pad || !box) return;
+    const editing = box.classList.contains('is-editing');
+    const editBtn = box.querySelector('[data-edit-sig]');
+    const clearBtn = box.querySelector('[data-clear-sig]');
+    const doneBtn = box.querySelector('[data-done-sig]');
+    if (editBtn) {
+      editBtn.textContent = pad.empty ? 'Add Signature' : 'Edit Signature';
+      editBtn.disabled = editing;
+    }
+    if (clearBtn) clearBtn.disabled = !editing || pad.empty;
+    if (doneBtn) doneBtn.disabled = !editing;
+    box.classList.toggle('has-signature', !pad.empty);
+  }
+
+  function enableSignature(id) {
+    const pad = signaturePads[id];
+    const box = document.querySelector(`[data-signature-box="${id}"]`);
+    if (!pad || !box) return;
+    box.classList.add('is-editing');
+    pad.setEnabled(true);
+    updateSignatureControls(id);
+  }
+
+  function lockSignature(id) {
+    const pad = signaturePads[id];
+    const box = document.querySelector(`[data-signature-box="${id}"]`);
+    if (!pad || !box) return;
+    pad.setEnabled(false);
+    box.classList.remove('is-editing');
+    updateSignatureControls(id);
+  }
+
+  function lockAllSignatures() {
+    Object.keys(signaturePads).forEach(lockSignature);
+  }
+
   function initSignatures() {
     $$('.signature-canvas').forEach((canvas) => {
       signaturePads[canvas.id] = new SignaturePadLite(canvas);
+      updateSignatureControls(canvas.id);
+    });
+    $$('[data-edit-sig]').forEach((btn) => {
+      btn.addEventListener('click', () => enableSignature(btn.dataset.editSig));
     });
     $$('[data-clear-sig]').forEach((btn) => {
       btn.addEventListener('click', () => signaturePads[btn.dataset.clearSig]?.clear());
+    });
+    $$('[data-done-sig]').forEach((btn) => {
+      btn.addEventListener('click', () => lockSignature(btn.dataset.doneSig));
     });
   }
 
@@ -131,6 +190,7 @@
   }
 
   function showScreen(name) {
+    lockAllSignatures();
     $$('.screen').forEach((s) => s.classList.remove('active'));
     byId(`screen-${name}`).classList.add('active');
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -239,6 +299,163 @@
     else { el.removeAttribute('src'); el.style.display = 'none'; }
   }
 
+  function removeGeneratedPages(type) {
+    $$(`.pdf-generated-page[data-pdf-type="${type}"]`).forEach((page) => page.remove());
+  }
+
+  function pageOverflows(page) {
+    return page.scrollHeight > page.clientHeight + 2;
+  }
+
+  function normalPartRow(part = {}) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${escapeHtml(part.qty || '')}</td><td>${escapeHtml(part.desc || '')}</td><td>${escapeHtml(part.book || '')}</td>`;
+    return tr;
+  }
+
+  function truckPartRow(part = {}) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${escapeHtml(part.desc || '')}</td><td class="pdf-amount">${escapeHtml(part.amount || '')}</td>`;
+    return tr;
+  }
+
+  function fillRowsThatFit(page, tbody, items, startIndex, rowBuilder) {
+    let index = startIndex;
+    while (index < items.length) {
+      const row = rowBuilder(items[index]);
+      tbody.appendChild(row);
+      if (pageOverflows(page)) {
+        row.remove();
+        break;
+      }
+      index += 1;
+    }
+    return index;
+  }
+
+  function addBlankRowsWhileTheyFit(page, tbody, rowBuilder, currentRows, minimumRows) {
+    let rows = currentRows;
+    while (rows < minimumRows) {
+      const row = rowBuilder({});
+      tbody.appendChild(row);
+      if (pageOverflows(page)) {
+        row.remove();
+        break;
+      }
+      rows += 1;
+    }
+  }
+
+  function signatureImageMarkup(dataUrl) {
+    return dataUrl ? `<img class="pdf-sign-image" src="${escapeAttr(dataUrl)}" alt="">` : '';
+  }
+
+  function normalFooterMarkup() {
+    return `
+      <div class="pdf-spacer"></div>
+      <table class="pdf-table pdf-compact">
+        <tr><td class="pdf-label" style="width:24%">Tech name</td><td style="width:28%">${escapeHtml(value('n_tech'))}</td><td class="pdf-label" style="width:22%">Hours used</td><td>${escapeHtml(value('n_hours'))}</td></tr>
+        <tr><td class="pdf-label">Time Start</td><td>${escapeHtml(value('n_start'))}</td><td class="pdf-label">Time end</td><td>${escapeHtml(value('n_end'))}</td></tr>
+      </table>
+      <div class="pdf-signatures">
+        <div><div style="font-weight:700">Driver Signature:</div>${signatureImageMarkup(signaturePads.n_driver_sig.toDataURL())}</div>
+        <div><div style="font-weight:700">Technician Signature:</div>${signatureImageMarkup(signaturePads.n_tech_sig.toDataURL())}</div>
+      </div>`;
+  }
+
+  function createNormalContinuationPage(pageNumber) {
+    const page = document.createElement('section');
+    page.className = 'pdf-page pdf-generated-page pdf-continuation-page';
+    page.dataset.pdfType = 'normal';
+    page.innerHTML = `
+      <div class="pdf-continuation-header">
+        <img src="hz-auto-logo.png" alt="HZ Auto">
+        <div>
+          <div class="pdf-continuation-title">Breakdown Job Card</div>
+          <div class="pdf-continuation-subtitle">Parts used and returned — continued</div>
+        </div>
+        <div class="pdf-continuation-meta">${escapeHtml(makeJobNumber('normal'))}<br>Page ${pageNumber}</div>
+      </div>
+      <table class="pdf-table pdf-compact pdf-continuation-table">
+        <thead><tr><th style="width:10%">QTY</th><th>Description</th><th style="width:24%">Book No.</th></tr></thead>
+        <tbody class="pdf-generated-parts"></tbody>
+      </table>
+      <div class="pdf-generated-footer-slot">${normalFooterMarkup()}</div>
+      <div class="pdf-continue-note pdf-generated-continue-note" hidden>Parts used and returned continue on the next page.</div>`;
+    return page;
+  }
+
+  function paginateNormalParts(parts) {
+    removeGeneratedPages('normal');
+    const page = byId('pdf-normal-1');
+    const tbody = byId('pdf_n_parts');
+    const footer = byId('pdf_n_footer');
+    const continueNote = byId('pdf_n_continue_note');
+
+    tbody.innerHTML = '';
+    page.classList.remove('pdf-has-continue-note');
+    footer.hidden = false;
+    continueNote.hidden = true;
+    parts.forEach((part) => tbody.appendChild(normalPartRow(part)));
+    addBlankRowsWhileTheyFit(page, tbody, normalPartRow, parts.length, 6);
+
+    if (!pageOverflows(page)) return;
+
+    // The original first page is full. Keep its normal fields and move the
+    // technician/signature section to the final continuation page.
+    tbody.innerHTML = '';
+    footer.hidden = true;
+    continueNote.hidden = false;
+    page.classList.add('pdf-has-continue-note');
+
+    let index = fillRowsThatFit(page, tbody, parts, 0, normalPartRow);
+    if (index === 0 && parts.length) {
+      tbody.appendChild(normalPartRow(parts[0]));
+      index = 1;
+    }
+
+    // If hiding the footer made every part fit on page 1, move a few of the
+    // final rows to page 2. This avoids a continuation page containing only
+    // signatures and keeps the document reading naturally.
+    if (index >= parts.length && parts.length) {
+      const moveCount = Math.min(4, tbody.children.length);
+      for (let i = 0; i < moveCount; i += 1) tbody.lastElementChild?.remove();
+      index = Math.max(0, parts.length - moveCount);
+    }
+
+    let anchor = page;
+    let pageNumber = 2;
+    let needsFinalFooterPage = true;
+    while (index < parts.length || needsFinalFooterPage) {
+      needsFinalFooterPage = false;
+      const continuation = createNormalContinuationPage(pageNumber);
+      anchor.insertAdjacentElement('afterend', continuation);
+      anchor = continuation;
+      const contBody = $('.pdf-generated-parts', continuation);
+      const footerSlot = $('.pdf-generated-footer-slot', continuation);
+      const note = $('.pdf-generated-continue-note', continuation);
+
+      // Reserve enough space for technician details/signatures so the final
+      // page can never be cut off, even when descriptions wrap to more lines.
+      footerSlot.style.visibility = 'hidden';
+      let next = fillRowsThatFit(continuation, contBody, parts, index, normalPartRow);
+      if (next === index) {
+        contBody.appendChild(normalPartRow(parts[index]));
+        next += 1;
+      }
+
+      if (next < parts.length) {
+        note.hidden = false;
+      } else {
+        footerSlot.style.visibility = 'visible';
+        addBlankRowsWhileTheyFit(continuation, contBody, normalPartRow, next - index, 4);
+      }
+
+      index = next;
+      pageNumber += 1;
+    }
+  }
+
   function buildNormalTemplate() {
     const fields = ['customer','receivedby','order','jobdetails','location','driver','cell','reg_tt','vin_tt','make_model','km','reg_t1','vin_t1','reg_t2','vin_t2','workdone','tech','hours'];
     fields.forEach((f) => setPdf(`pdf_n_${f}`, value(`n_${f}`)));
@@ -247,19 +464,116 @@
     setPdf('pdf_n_start', value('n_start'));
     setPdf('pdf_n_end', value('n_end'));
     setPdf('pdf_n_jobno', makeJobNumber('normal'));
-
-    const tbody = byId('pdf_n_parts');
-    tbody.innerHTML = '';
-    const parts = getNormalParts();
-    const rowCount = Math.max(6, parts.length);
-    for (let i = 0; i < rowCount; i++) {
-      const p = parts[i] || { qty:'', desc:'', book:'' };
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${escapeHtml(p.qty)}</td><td>${escapeHtml(p.desc)}</td><td>${escapeHtml(p.book)}</td>`;
-      tbody.appendChild(tr);
-    }
     setPdfImg('pdf_n_driver_sig', signaturePads.n_driver_sig.toDataURL());
     setPdfImg('pdf_n_tech_sig', signaturePads.n_tech_sig.toDataURL());
+    paginateNormalParts(getNormalParts());
+  }
+
+  function truckFooterMarkup() {
+    return `
+      <div class="pdf-spacer"></div>
+      <table class="pdf-table pdf-compact">
+        <tr><th style="text-align:left;width:43%">TIME REPORTED</th><th style="width:18%">TIME</th><th style="width:18%">KM</th><td style="width:21%" rowspan="9">${escapeHtml(value('t_tech_report'))}</td></tr>
+        <tr><td>Time started</td><td>${escapeHtml(value('t_time_started'))}</td><td>${escapeHtml(value('t_time_started_km'))}</td></tr>
+        <tr><td>Time arrived at site</td><td>${escapeHtml(value('t_time_arrived'))}</td><td>${escapeHtml(value('t_time_arrived_km'))}</td></tr>
+        <tr><td>Time of completion</td><td>${escapeHtml(value('t_time_completed'))}</td><td>${escapeHtml(value('t_time_completed_km'))}</td></tr>
+        <tr><td>Time back base</td><td>${escapeHtml(value('t_time_back'))}</td><td>${escapeHtml(value('t_time_back_km'))}</td></tr>
+        <tr><td>Normal time</td><td>${escapeHtml(value('t_normal_time'))}</td><td></td></tr>
+        <tr><td>Over time</td><td>${escapeHtml(value('t_over_time'))}</td><td></td></tr>
+        <tr><td>Toll fees</td><td>${escapeHtml(value('t_toll_fees'))}</td><td></td></tr>
+        <tr><td>Technician report</td><td colspan="2"></td></tr>
+      </table>
+      <div class="pdf-spacer"></div>
+      <table class="pdf-table pdf-compact">
+        <tr><td class="pdf-label">Technician Name:</td><td>${escapeHtml(value('t_technician'))}</td><td class="pdf-label">Driver name:</td><td>${escapeHtml(value('t_driver'))}</td></tr>
+        <tr><td class="pdf-label">Signature</td><td>${signatureImageMarkup(signaturePads.t_tech_sig.toDataURL())}</td><td class="pdf-label">Signature</td><td>${signatureImageMarkup(signaturePads.t_driver_sig.toDataURL())}</td></tr>
+      </table>`;
+  }
+
+  function createTruckContinuationPage(pageNumber) {
+    const page = document.createElement('section');
+    page.className = 'pdf-page pdf-generated-page pdf-continuation-page';
+    page.dataset.pdfType = 'truck';
+    page.innerHTML = `
+      <div class="pdf-continuation-header">
+        <img src="hz-auto-logo.png" alt="HZ Auto">
+        <div>
+          <div class="pdf-continuation-title">BREAKDOWN TECHNICIAN REPORT</div>
+          <div class="pdf-continuation-subtitle">Parts used — continued</div>
+          <div class="pdf-continuation-customer">${escapeHtml(value('t_customer'))}${value('t_reg') ? ` • ${escapeHtml(value('t_reg'))}` : ''}</div>
+        </div>
+        <div class="pdf-continuation-meta">AML${escapeHtml(makeJobNumber('truck').slice(-4))}<br>${escapeHtml(formatDate(value('t_date')))}<br>Page ${pageNumber}</div>
+      </div>
+      <table class="pdf-table pdf-compact pdf-continuation-table">
+        <thead><tr><th style="text-align:left">PARTS USED</th><th style="width:24%">AMOUNT</th></tr></thead>
+        <tbody class="pdf-generated-parts"></tbody>
+      </table>
+      <div class="pdf-generated-footer-slot">${truckFooterMarkup()}</div>
+      <div class="pdf-continue-note pdf-generated-continue-note" hidden>Parts used continue on the next page.</div>`;
+    return page;
+  }
+
+  function paginateTruckParts(parts) {
+    removeGeneratedPages('truck');
+    const page = byId('pdf-truck-1');
+    const tbody = byId('pdf_t_parts');
+    const footer = byId('pdf_t_footer');
+    const continueNote = byId('pdf_t_continue_note');
+
+    tbody.innerHTML = '';
+    page.classList.remove('pdf-has-continue-note');
+    footer.hidden = false;
+    continueNote.hidden = true;
+    parts.forEach((part) => tbody.appendChild(truckPartRow(part)));
+    addBlankRowsWhileTheyFit(page, tbody, truckPartRow, parts.length, 9);
+
+    if (!pageOverflows(page)) return;
+
+    tbody.innerHTML = '';
+    footer.hidden = true;
+    continueNote.hidden = false;
+    page.classList.add('pdf-has-continue-note');
+
+    let index = fillRowsThatFit(page, tbody, parts, 0, truckPartRow);
+    if (index === 0 && parts.length) {
+      tbody.appendChild(truckPartRow(parts[0]));
+      index = 1;
+    }
+
+    if (index >= parts.length && parts.length) {
+      const moveCount = Math.min(4, tbody.children.length);
+      for (let i = 0; i < moveCount; i += 1) tbody.lastElementChild?.remove();
+      index = Math.max(0, parts.length - moveCount);
+    }
+
+    let anchor = page;
+    let pageNumber = 2;
+    let needsFinalFooterPage = true;
+    while (index < parts.length || needsFinalFooterPage) {
+      needsFinalFooterPage = false;
+      const continuation = createTruckContinuationPage(pageNumber);
+      anchor.insertAdjacentElement('afterend', continuation);
+      anchor = continuation;
+      const contBody = $('.pdf-generated-parts', continuation);
+      const footerSlot = $('.pdf-generated-footer-slot', continuation);
+      const note = $('.pdf-generated-continue-note', continuation);
+
+      footerSlot.style.visibility = 'hidden';
+      let next = fillRowsThatFit(continuation, contBody, parts, index, truckPartRow);
+      if (next === index) {
+        contBody.appendChild(truckPartRow(parts[index]));
+        next += 1;
+      }
+
+      if (next < parts.length) {
+        note.hidden = false;
+      } else {
+        footerSlot.style.visibility = 'visible';
+      }
+
+      index = next;
+      pageNumber += 1;
+    }
   }
 
   function buildTruckTemplate() {
@@ -267,19 +581,9 @@
     fields.forEach((f) => setPdf(`pdf_t_${f}`, value(`t_${f}`)));
     setPdf('pdf_t_date', formatDate(value('t_date')));
     setPdf('pdf_t_docno', makeJobNumber('truck').slice(-4));
-
-    const tbody = byId('pdf_t_parts');
-    tbody.innerHTML = '';
-    const parts = getTruckParts();
-    const rowCount = Math.max(9, parts.length);
-    for (let i = 0; i < rowCount; i++) {
-      const p = parts[i] || { desc:'', amount:'' };
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${escapeHtml(p.desc)}</td><td class="pdf-amount">${escapeHtml(p.amount)}</td>`;
-      tbody.appendChild(tr);
-    }
     setPdfImg('pdf_t_tech_sig', signaturePads.t_tech_sig.toDataURL());
     setPdfImg('pdf_t_driver_sig', signaturePads.t_driver_sig.toDataURL());
+    paginateTruckParts(getTruckParts());
   }
 
   function buildTripTemplate() {
@@ -326,8 +630,8 @@
   }
 
   function templatePages(type) {
-    if (type === 'normal') return [byId('pdf-normal-1')];
-    if (type === 'truck') return [byId('pdf-truck-1')];
+    if (type === 'normal') return [byId('pdf-normal-1'), ...$$('.pdf-generated-page[data-pdf-type="normal"]')];
+    if (type === 'truck') return [byId('pdf-truck-1'), ...$$('.pdf-generated-page[data-pdf-type="truck"]')];
     return [byId('pdf-trip-1'), byId('pdf-trip-2')];
   }
 
@@ -350,6 +654,7 @@
   }
 
   async function openReview(type) {
+    lockAllSignatures();
     if (!validateForm(type)) return;
     currentType = type;
     const modal = byId('review-modal');
@@ -364,11 +669,18 @@
     try {
       currentPreviewCanvases = await renderCanvases(type);
       preview.innerHTML = '';
-      currentPreviewCanvases.forEach((canvas) => {
+      currentPreviewCanvases.forEach((canvas, index) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'preview-page';
         const img = new Image();
-        img.src = canvas.toDataURL('image/jpeg', 0.88);
-        img.alt = 'Job card preview';
-        preview.appendChild(img);
+        img.src = canvas.toDataURL('image/jpeg', 0.9);
+        img.alt = `Job card preview page ${index + 1} of ${currentPreviewCanvases.length}`;
+        const label = document.createElement('div');
+        label.className = 'preview-page-label';
+        label.textContent = `Page ${index + 1} of ${currentPreviewCanvases.length}`;
+        wrapper.appendChild(img);
+        wrapper.appendChild(label);
+        preview.appendChild(wrapper);
       });
       byId('confirm-send').disabled = false;
       byId('download-pdf').disabled = false;
@@ -457,7 +769,6 @@
       if (navigator.canShare && navigator.share && navigator.canShare({ files: [file] })) {
         btn.textContent = 'Opening Share Menu…';
         await navigator.share(shareData);
-        clearDraft(currentType);
         toast('PDF opened in your phone share menu. Choose Gmail, Outlook, WhatsApp or another app.', 6000);
       } else {
         pdf.save(meta.filename);
@@ -475,51 +786,6 @@
     }
   }
 
-  function draftKey(type) { return `hzauto_draft_${type}`; }
-
-  function formFieldIds(type) {
-    return $$(`#form-${type} input[id], #form-${type} textarea[id], #form-${type} select[id]`).map((x) => x.id);
-  }
-
-  function saveDraft(type) {
-    const data = { fields: {}, signatures: {}, parts: [] };
-    formFieldIds(type).forEach((id) => { data.fields[id] = byId(id).value; });
-    if (type === 'normal') data.parts = getNormalParts();
-    if (type === 'truck') data.parts = getTruckParts();
-    const sigIds = type === 'normal' ? ['n_driver_sig','n_tech_sig'] : type === 'truck' ? ['t_tech_sig','t_driver_sig'] : ['p_tech_sig','p_customer_sig'];
-    sigIds.forEach((id) => { data.signatures[id] = signaturePads[id].toDataURL(); });
-    localStorage.setItem(draftKey(type), JSON.stringify(data));
-    toast('Draft saved on this phone.');
-  }
-
-  function restoreDraft(type) {
-    const raw = localStorage.getItem(draftKey(type));
-    if (!raw) return false;
-    try {
-      const data = JSON.parse(raw);
-      Object.entries(data.fields || {}).forEach(([id, v]) => { if (byId(id)) byId(id).value = v; });
-      if (type === 'normal') {
-        byId('n_parts_rows').innerHTML = '';
-        (data.parts || []).forEach(addNormalPart);
-        if (!(data.parts || []).length) addNormalPart();
-      }
-      if (type === 'truck') {
-        byId('t_parts_rows').innerHTML = '';
-        (data.parts || []).forEach(addTruckPart);
-        if (!(data.parts || []).length) addTruckPart();
-      }
-      Object.entries(data.signatures || {}).forEach(([id, d]) => signaturePads[id]?.setDataURL(d));
-      toast('Saved draft restored.');
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  function clearDraft(type) {
-    localStorage.removeItem(draftKey(type));
-  }
-
   function toast(message, ms = 3500) {
     const el = byId('toast');
     el.textContent = message;
@@ -530,18 +796,11 @@
 
   function wireEvents() {
     $$('[data-open-form]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const type = btn.dataset.openForm;
-        showScreen(type);
-        if (localStorage.getItem(draftKey(type)) && confirm('A saved draft exists for this form. Restore it?')) {
-          restoreDraft(type);
-        }
-      });
+      btn.addEventListener('click', () => showScreen(btn.dataset.openForm));
     });
     $$('[data-home]').forEach((btn) => btn.addEventListener('click', () => showScreen('home')));
     $$('[data-add-part]').forEach((btn) => btn.addEventListener('click', () => btn.dataset.addPart === 'normal' ? addNormalPart() : addTruckPart()));
     $$('[data-review]').forEach((btn) => btn.addEventListener('click', () => openReview(btn.dataset.review)));
-    $$('[data-save-draft]').forEach((btn) => btn.addEventListener('click', () => saveDraft(btn.dataset.saveDraft)));
     byId('close-review').addEventListener('click', closeReview);
     byId('edit-review').addEventListener('click', closeReview);
     byId('download-pdf').addEventListener('click', downloadCurrentPdf);

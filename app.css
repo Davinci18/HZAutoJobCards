@@ -310,3 +310,215 @@ input:focus, select:focus, textarea:focus {
   .form-card { padding:15px; border-radius:14px; }
   .form-topbar { padding-top:6px; }
 }
+
+/* =========================================================
+   V4 reliability updates
+   - signatures are locked until explicitly enabled
+   - larger signing area for phones
+   - multi-page PDF continuation support
+   ========================================================= */
+
+/* Safer signature capture: scrolling over a locked signature box behaves
+   like normal page scrolling. Drawing only activates after Add/Edit Signature. */
+.sig-box {
+  border:1px solid #cbd5e1;
+  border-radius:14px;
+  background:#fff;
+  padding:10px;
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+.signature-stage {
+  position:relative;
+  min-height:220px;
+  border:1px dashed #b8c0ca;
+  border-radius:10px;
+  overflow:hidden;
+  background:
+    linear-gradient(180deg, rgba(248,250,252,.92), rgba(255,255,255,.98)),
+    #fff;
+}
+.signature-canvas {
+  width:100%;
+  height:220px;
+  display:block;
+  border-radius:10px;
+  background:#fff;
+  pointer-events:none;
+  touch-action:pan-y;
+}
+.signature-lock-note {
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  text-align:center;
+  color:#6b7280;
+  font-size:.86rem;
+  line-height:1.4;
+  background:rgba(248,250,252,.78);
+  pointer-events:none;
+}
+.sig-box.is-editing {
+  border-color:#c62828;
+  box-shadow:0 0 0 3px rgba(198,40,40,.10);
+}
+.sig-box.is-editing .signature-stage { border-style:solid; border-color:#c62828; }
+.sig-box.is-editing .signature-canvas {
+  pointer-events:auto;
+  touch-action:none;
+  cursor:crosshair;
+}
+.sig-box.is-editing .signature-lock-note { display:none; }
+.sig-box.has-signature:not(.is-editing) .signature-lock-note {
+  align-items:flex-end;
+  justify-content:flex-end;
+  padding:8px 10px;
+  background:transparent;
+  font-size:.74rem;
+  color:#69717c;
+}
+.sig-box.has-signature:not(.is-editing) .signature-lock-note strong { display:none; }
+.sig-box.has-signature:not(.is-editing) .signature-lock-note::before { content:'Signature saved • locked'; }
+.sig-box.has-signature:not(.is-editing) .signature-lock-note { font-size:0; }
+.sig-box.has-signature:not(.is-editing) .signature-lock-note::before { font-size:.74rem; }
+.sig-actions {
+  display:grid;
+  grid-template-columns:1.5fr 1fr 1fr;
+  gap:8px;
+  margin-top:10px;
+}
+.edit-sig, .clear-sig, .done-sig {
+  min-height:44px;
+  border-radius:9px;
+  padding:8px 10px;
+  font-size:.84rem;
+  font-weight:800;
+  cursor:pointer;
+}
+.edit-sig {
+  border:1px solid #c62828;
+  background:#fff;
+  color:#a61f1f;
+}
+.done-sig {
+  border:1px solid #15803d;
+  background:#15803d;
+  color:#fff;
+}
+.clear-sig {
+  border:1px solid #d8dde4;
+  background:#f7f8fa;
+  color:#4b5563;
+}
+.edit-sig:disabled, .clear-sig:disabled, .done-sig:disabled {
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+/* Review pages now show page numbers when a long parts list creates
+   continuation pages. */
+.preview-page {
+  width:min(100%, 760px);
+  display:grid;
+  justify-items:center;
+  gap:7px;
+}
+.preview-page img {
+  width:100%;
+  height:auto;
+  background:#fff;
+  box-shadow:0 3px 18px rgba(0,0,0,.2);
+}
+.preview-page-label {
+  padding:5px 10px;
+  border-radius:999px;
+  background:#dfe4ea;
+  color:#4b5563;
+  font-size:.76rem;
+  font-weight:800;
+}
+
+/* PDF continuation pages */
+.pdf-page td, .pdf-page th {
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+.pdf-dynamic-footer[hidden], .pdf-continue-note[hidden] { display:none !important; }
+.pdf-continue-note {
+  position:absolute;
+  left:34px;
+  right:34px;
+  bottom:30px;
+  border:1px solid #777;
+  padding:8px 10px;
+  text-align:center;
+  font-weight:700;
+  background:#f3f3f3;
+}
+.pdf-continuation-header {
+  display:grid;
+  grid-template-columns:105px 1fr 165px;
+  gap:14px;
+  align-items:center;
+  padding-bottom:14px;
+  margin-bottom:14px;
+  border-bottom:2px solid #333;
+}
+.pdf-continuation-header img {
+  width:95px;
+  height:76px;
+  object-fit:contain;
+}
+.pdf-continuation-title {
+  font-size:20px;
+  line-height:1.1;
+  font-weight:800;
+}
+.pdf-continuation-subtitle {
+  margin-top:5px;
+  font-size:14px;
+  font-weight:700;
+  color:#444;
+}
+.pdf-continuation-customer {
+  margin-top:5px;
+  font-size:12px;
+  color:#333;
+}
+.pdf-continuation-meta {
+  text-align:right;
+  font-size:12px;
+  line-height:1.45;
+  font-weight:700;
+}
+.pdf-continuation-table td,
+.pdf-continuation-table th {
+  padding:5px 6px;
+  font-size:12.5px;
+  line-height:1.25;
+}
+.pdf-generated-footer-slot {
+  margin-top:12px;
+}
+
+@media (max-width:640px) {
+  .signature-stage { min-height:245px; }
+  .signature-canvas { height:245px; }
+  .sig-actions { grid-template-columns:1fr 1fr; }
+  .edit-sig { grid-column:1 / -1; }
+  .done-sig, .clear-sig { width:100%; }
+}
+
+/* Reserve room for the first-page continuation message so it never sits on
+   top of the final visible parts row. */
+.pdf-page.pdf-has-continue-note { padding-bottom:82px; }
+.pdf-dynamic-footer .pdf-sign-image,
+.pdf-generated-footer-slot .pdf-sign-image {
+  width:210px;
+  height:70px;
+  max-width:210px;
+  max-height:70px;
+  object-fit:contain;
+}

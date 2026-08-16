@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>HZ Auto Job Cards</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="app.css?v=3">
+  <link rel="stylesheet" href="app.css?v=4">
 </head>
 <body>
   <main class="app-shell">
@@ -103,8 +103,32 @@
         <div class="form-card">
           <h3>Signatures</h3>
           <div class="field-grid">
-            <div class="field"><label>Driver signature</label><div class="sig-box"><canvas id="n_driver_sig" class="signature-canvas"></canvas><div class="sig-actions"><button type="button" class="clear-sig" data-clear-sig="n_driver_sig">Clear</button></div></div></div>
-            <div class="field"><label>Technician signature</label><div class="sig-box"><canvas id="n_tech_sig" class="signature-canvas"></canvas><div class="sig-actions"><button type="button" class="clear-sig" data-clear-sig="n_tech_sig">Clear</button></div></div></div>
+            <div class="field"><label>Driver signature</label>
+              <div class="sig-box" data-signature-box="n_driver_sig">
+                <div class="signature-stage">
+                  <canvas id="n_driver_sig" class="signature-canvas" aria-label="Driver signature area"></canvas>
+                  <div class="signature-lock-note">Locked for safe scrolling. Tap <strong>Add Signature</strong> when ready.</div>
+                </div>
+                <div class="sig-actions">
+                  <button type="button" class="edit-sig" data-edit-sig="n_driver_sig">Add Signature</button>
+                  <button type="button" class="clear-sig" data-clear-sig="n_driver_sig" disabled>Clear</button>
+                  <button type="button" class="done-sig" data-done-sig="n_driver_sig" disabled>Done</button>
+                </div>
+              </div>
+            </div>
+            <div class="field"><label>Technician signature</label>
+              <div class="sig-box" data-signature-box="n_tech_sig">
+                <div class="signature-stage">
+                  <canvas id="n_tech_sig" class="signature-canvas" aria-label="Technician signature area"></canvas>
+                  <div class="signature-lock-note">Locked for safe scrolling. Tap <strong>Add Signature</strong> when ready.</div>
+                </div>
+                <div class="sig-actions">
+                  <button type="button" class="edit-sig" data-edit-sig="n_tech_sig">Add Signature</button>
+                  <button type="button" class="clear-sig" data-clear-sig="n_tech_sig" disabled>Clear</button>
+                  <button type="button" class="done-sig" data-done-sig="n_tech_sig" disabled>Done</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -113,7 +137,6 @@
           <p class="section-note">No server is needed. Review the form first, then download the PDF or share it from your phone to Gmail, Outlook, WhatsApp or another app.</p>
           <div class="form-actions">
             <button class="primary-btn" type="button" data-review="normal">Review Job Card</button>
-            <button class="secondary-btn" type="button" data-save-draft="normal">Save Draft on Phone</button>
           </div>
         </div>
       </form>
@@ -198,8 +221,32 @@
           <div class="field-grid">
             <div class="field"><label for="t_technician">Technician name</label><input id="t_technician" value="Haaike"></div>
             <div class="field"><label for="t_driver">Driver name</label><input id="t_driver"></div>
-            <div class="field"><label>Technician signature</label><div class="sig-box"><canvas id="t_tech_sig" class="signature-canvas"></canvas><div class="sig-actions"><button type="button" class="clear-sig" data-clear-sig="t_tech_sig">Clear</button></div></div></div>
-            <div class="field"><label>Driver signature</label><div class="sig-box"><canvas id="t_driver_sig" class="signature-canvas"></canvas><div class="sig-actions"><button type="button" class="clear-sig" data-clear-sig="t_driver_sig">Clear</button></div></div></div>
+            <div class="field"><label>Technician signature</label>
+              <div class="sig-box" data-signature-box="t_tech_sig">
+                <div class="signature-stage">
+                  <canvas id="t_tech_sig" class="signature-canvas" aria-label="Technician signature area"></canvas>
+                  <div class="signature-lock-note">Locked for safe scrolling. Tap <strong>Add Signature</strong> when ready.</div>
+                </div>
+                <div class="sig-actions">
+                  <button type="button" class="edit-sig" data-edit-sig="t_tech_sig">Add Signature</button>
+                  <button type="button" class="clear-sig" data-clear-sig="t_tech_sig" disabled>Clear</button>
+                  <button type="button" class="done-sig" data-done-sig="t_tech_sig" disabled>Done</button>
+                </div>
+              </div>
+            </div>
+            <div class="field"><label>Driver signature</label>
+              <div class="sig-box" data-signature-box="t_driver_sig">
+                <div class="signature-stage">
+                  <canvas id="t_driver_sig" class="signature-canvas" aria-label="Driver signature area"></canvas>
+                  <div class="signature-lock-note">Locked for safe scrolling. Tap <strong>Add Signature</strong> when ready.</div>
+                </div>
+                <div class="sig-actions">
+                  <button type="button" class="edit-sig" data-edit-sig="t_driver_sig">Add Signature</button>
+                  <button type="button" class="clear-sig" data-clear-sig="t_driver_sig" disabled>Clear</button>
+                  <button type="button" class="done-sig" data-done-sig="t_driver_sig" disabled>Done</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -208,7 +255,6 @@
           <p class="section-note">No server is needed. Review the report first, then download the PDF or share it from your phone.</p>
           <div class="form-actions">
             <button class="primary-btn" type="button" data-review="truck">Review Technician Report</button>
-            <button class="secondary-btn" type="button" data-save-draft="truck">Save Draft on Phone</button>
           </div>
         </div>
       </form>
@@ -268,8 +314,32 @@
             <div class="field"><label for="p_customer_date">Customer date</label><input id="p_customer_date" type="date"></div>
             <div class="field"><label for="p_tech_name">Technician / Mechanic / RSA name</label><input id="p_tech_name" value="Haaike"></div>
             <div class="field"><label for="p_foreman_name">Foreman / Manager name</label><input id="p_foreman_name"></div>
-            <div class="field"><label>Technician signature</label><div class="sig-box"><canvas id="p_tech_sig" class="signature-canvas"></canvas><div class="sig-actions"><button type="button" class="clear-sig" data-clear-sig="p_tech_sig">Clear</button></div></div></div>
-            <div class="field"><label>Customer / Foreman signature</label><div class="sig-box"><canvas id="p_customer_sig" class="signature-canvas"></canvas><div class="sig-actions"><button type="button" class="clear-sig" data-clear-sig="p_customer_sig">Clear</button></div></div></div>
+            <div class="field"><label>Technician signature</label>
+              <div class="sig-box" data-signature-box="p_tech_sig">
+                <div class="signature-stage">
+                  <canvas id="p_tech_sig" class="signature-canvas" aria-label="Technician signature area"></canvas>
+                  <div class="signature-lock-note">Locked for safe scrolling. Tap <strong>Add Signature</strong> when ready.</div>
+                </div>
+                <div class="sig-actions">
+                  <button type="button" class="edit-sig" data-edit-sig="p_tech_sig">Add Signature</button>
+                  <button type="button" class="clear-sig" data-clear-sig="p_tech_sig" disabled>Clear</button>
+                  <button type="button" class="done-sig" data-done-sig="p_tech_sig" disabled>Done</button>
+                </div>
+              </div>
+            </div>
+            <div class="field"><label>Customer / Foreman signature</label>
+              <div class="sig-box" data-signature-box="p_customer_sig">
+                <div class="signature-stage">
+                  <canvas id="p_customer_sig" class="signature-canvas" aria-label="Customer or foreman signature area"></canvas>
+                  <div class="signature-lock-note">Locked for safe scrolling. Tap <strong>Add Signature</strong> when ready.</div>
+                </div>
+                <div class="sig-actions">
+                  <button type="button" class="edit-sig" data-edit-sig="p_customer_sig">Add Signature</button>
+                  <button type="button" class="clear-sig" data-clear-sig="p_customer_sig" disabled>Clear</button>
+                  <button type="button" class="done-sig" data-done-sig="p_customer_sig" disabled>Done</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -278,7 +348,6 @@
           <p class="section-note">No server is needed. Review the two-page trip check first, then download the PDF or share it from your phone.</p>
           <div class="form-actions">
             <button class="primary-btn" type="button" data-review="trip">Review Trip Check</button>
-            <button class="secondary-btn" type="button" data-save-draft="trip">Save Draft on Phone</button>
           </div>
         </div>
       </form>
@@ -332,15 +401,18 @@
         <thead><tr><th style="width:10%">QTY</th><th>Description</th><th style="width:24%">Book No.</th></tr></thead>
         <tbody id="pdf_n_parts"></tbody>
       </table>
-      <div class="pdf-spacer"></div>
-      <table class="pdf-table pdf-compact">
-        <tr><td class="pdf-label" style="width:24%">Tech name</td><td id="pdf_n_tech" style="width:28%"></td><td class="pdf-label" style="width:22%">Hours used</td><td id="pdf_n_hours"></td></tr>
-        <tr><td class="pdf-label">Time Start</td><td id="pdf_n_start"></td><td class="pdf-label">Time end</td><td id="pdf_n_end"></td></tr>
-      </table>
-      <div class="pdf-signatures">
-        <div><div style="font-weight:700">Driver Signature:</div><img id="pdf_n_driver_sig" class="pdf-sign-image" alt=""></div>
-        <div><div style="font-weight:700">Technician Signature:</div><img id="pdf_n_tech_sig" class="pdf-sign-image" alt=""></div>
+      <div id="pdf_n_footer" class="pdf-dynamic-footer">
+        <div class="pdf-spacer"></div>
+        <table class="pdf-table pdf-compact">
+          <tr><td class="pdf-label" style="width:24%">Tech name</td><td id="pdf_n_tech" style="width:28%"></td><td class="pdf-label" style="width:22%">Hours used</td><td id="pdf_n_hours"></td></tr>
+          <tr><td class="pdf-label">Time Start</td><td id="pdf_n_start"></td><td class="pdf-label">Time end</td><td id="pdf_n_end"></td></tr>
+        </table>
+        <div class="pdf-signatures">
+          <div><div style="font-weight:700">Driver Signature:</div><img id="pdf_n_driver_sig" class="pdf-sign-image" alt=""></div>
+          <div><div style="font-weight:700">Technician Signature:</div><img id="pdf_n_tech_sig" class="pdf-sign-image" alt=""></div>
+        </div>
       </div>
+      <div id="pdf_n_continue_note" class="pdf-continue-note" hidden>Job card continues on the next page.</div>
     </section>
 
     <!-- Truck breakdown technician report -->
@@ -360,7 +432,7 @@
         <tr><td class="pdf-label">Trailer A Make/ Reg:</td><td id="pdf_t_trailer_a"></td><td class="pdf-label">VIN number:</td><td id="pdf_t_trailer_a_vin"></td></tr>
         <tr><td class="pdf-label">Trailer B Make/ Reg:</td><td id="pdf_t_trailer_b"></td><td class="pdf-label">VIN number:</td><td id="pdf_t_trailer_b_vin"></td></tr>
       </table>
-      <div style="display:grid;grid-template-columns:51% 49%;margin-top:-1px">
+      <div id="pdf_t_breakdown_grid" style="display:grid;grid-template-columns:51% 49%;margin-top:-1px">
         <div>
           <table class="pdf-table pdf-compact">
             <tr><th style="text-align:left">LOCATION OF BREAKDOWN:</th></tr><tr><td id="pdf_t_location" style="height:54px"></td></tr>
@@ -383,23 +455,26 @@
           </table>
         </div>
       </div>
-      <div class="pdf-spacer"></div>
-      <table class="pdf-table pdf-compact">
-        <tr><th style="text-align:left;width:43%">TIME REPORTED</th><th style="width:18%">TIME</th><th style="width:18%">KM</th><td style="width:21%" rowspan="9" id="pdf_t_tech_report"></td></tr>
-        <tr><td>Time started</td><td id="pdf_t_time_started"></td><td id="pdf_t_time_started_km"></td></tr>
-        <tr><td>Time arrived at site</td><td id="pdf_t_time_arrived"></td><td id="pdf_t_time_arrived_km"></td></tr>
-        <tr><td>Time of completion</td><td id="pdf_t_time_completed"></td><td id="pdf_t_time_completed_km"></td></tr>
-        <tr><td>Time back base</td><td id="pdf_t_time_back"></td><td id="pdf_t_time_back_km"></td></tr>
-        <tr><td>Normal time</td><td id="pdf_t_normal_time"></td><td></td></tr>
-        <tr><td>Over time</td><td id="pdf_t_over_time"></td><td></td></tr>
-        <tr><td>Toll fees</td><td id="pdf_t_toll_fees"></td><td></td></tr>
-        <tr><td>Technician report</td><td colspan="2"></td></tr>
-      </table>
-      <div class="pdf-spacer"></div>
-      <table class="pdf-table pdf-compact">
-        <tr><td class="pdf-label">Technician Name:</td><td id="pdf_t_technician"></td><td class="pdf-label">Driver name:</td><td id="pdf_t_driver"></td></tr>
-        <tr><td class="pdf-label">Signature</td><td><img id="pdf_t_tech_sig" class="pdf-sign-image" alt=""></td><td class="pdf-label">Signature</td><td><img id="pdf_t_driver_sig" class="pdf-sign-image" alt=""></td></tr>
-      </table>
+      <div id="pdf_t_footer" class="pdf-dynamic-footer">
+        <div class="pdf-spacer"></div>
+        <table class="pdf-table pdf-compact">
+          <tr><th style="text-align:left;width:43%">TIME REPORTED</th><th style="width:18%">TIME</th><th style="width:18%">KM</th><td style="width:21%" rowspan="9" id="pdf_t_tech_report"></td></tr>
+          <tr><td>Time started</td><td id="pdf_t_time_started"></td><td id="pdf_t_time_started_km"></td></tr>
+          <tr><td>Time arrived at site</td><td id="pdf_t_time_arrived"></td><td id="pdf_t_time_arrived_km"></td></tr>
+          <tr><td>Time of completion</td><td id="pdf_t_time_completed"></td><td id="pdf_t_time_completed_km"></td></tr>
+          <tr><td>Time back base</td><td id="pdf_t_time_back"></td><td id="pdf_t_time_back_km"></td></tr>
+          <tr><td>Normal time</td><td id="pdf_t_normal_time"></td><td></td></tr>
+          <tr><td>Over time</td><td id="pdf_t_over_time"></td><td></td></tr>
+          <tr><td>Toll fees</td><td id="pdf_t_toll_fees"></td><td></td></tr>
+          <tr><td>Technician report</td><td colspan="2"></td></tr>
+        </table>
+        <div class="pdf-spacer"></div>
+        <table class="pdf-table pdf-compact">
+          <tr><td class="pdf-label">Technician Name:</td><td id="pdf_t_technician"></td><td class="pdf-label">Driver name:</td><td id="pdf_t_driver"></td></tr>
+          <tr><td class="pdf-label">Signature</td><td><img id="pdf_t_tech_sig" class="pdf-sign-image" alt=""></td><td class="pdf-label">Signature</td><td><img id="pdf_t_driver_sig" class="pdf-sign-image" alt=""></td></tr>
+        </table>
+      </div>
+      <div id="pdf_t_continue_note" class="pdf-continue-note" hidden>Technician report continues on the next page.</div>
     </section>
 
     <!-- Side tipper Part A -->
@@ -453,6 +528,6 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
